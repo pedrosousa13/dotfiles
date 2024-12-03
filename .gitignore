@@ -1,3 +1,5 @@
 .idea
 .git
 scripts
+secrets-in.zsh
+secrets-out.zsh
