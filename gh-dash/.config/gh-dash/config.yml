@@ -5,6 +5,8 @@ prSections:
   filters: is:open review-requested:@me draft:false -author:@me
 - title: Mine not reviewed @ef-global
   filters: is:open author:@me review:none draft:false org:ef-global
+- title: Mine reviewed @ef-global
+  filters: type:pr is:open author:@me draft:false user:ef-global -review:none
 - title: My Pull Requests
   filters: is:open author:@me
 - title: Involved
