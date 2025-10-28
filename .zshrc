@@ -1,9 +1,8 @@
-# Amazon Q pre block. Keep at the top of this file.
-[[ -f "${HOME}/Library/Application Support/amazon-q/shell/zshrc.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/amazon-q/shell/zshrc.pre.zsh"
-# secrets management
+# zmodload zsh/zprof
 export DOTFILES_DIR="${HOME}/dotfiles"
 secrets_out_path="${DOTFILES_DIR}/zsh/secrets-out.zsh"
 
+# secrets management
 if [ ! -f "$secrets_out_path" ]; then
     echo "Creating ${secrets_out_path}..."
     op --account "my.1password.com" read op://Personal/zshrc_secrets/notesPlain --out-file "${DOTFILES_DIR}/zsh/secrets-out.zsh"
@@ -109,6 +108,10 @@ alias studio="npx prisma studio"
 alias dbpush="npx prisma db push"
 alias pformat="npx prisma format"
 
+# weather
+alias lu="curl 'wttr.in/Luzern?Fn2'"
+alias we="curl 'wttr.in/?Fn2'"
+
 
 # Shell integrations
 eval "$(fzf --zsh)"
@@ -164,7 +167,3 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
-
-# Amazon Q post block. Keep at the bottom of this file.
-[[ -f "${HOME}/Library/Application Support/amazon-q/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/amazon-q/shell/zshrc.post.zsh"
-
