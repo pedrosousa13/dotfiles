@@ -94,6 +94,7 @@ alias gfm="git fetch origin master:master"
 # alias ggsup="git branch --set-upstream-to=origin/$(current_branch)"
 alias glatest="git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'"
 alias gs="git status"
+alias grh="git reset --hard && git clean -df"
 
 # docker
 alias doup="docker-compose up -d"
@@ -111,6 +112,19 @@ alias pformat="npx prisma format"
 # weather
 alias lu="curl 'wttr.in/Luzern?Fn2'"
 alias we="curl 'wttr.in/?Fn2'"
+
+# npm
+unalias npm 2>/dev/null
+npm() {
+  if command -v npq-hero &>/dev/null; then
+    npq-hero "$@" 2>/dev/null || {
+      echo "falling back to npm" >&2
+      command npm "$@"
+    }
+  else
+    command npm "$@"
+  fi
+}
 
 
 # Shell integrations
