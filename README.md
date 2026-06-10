@@ -14,6 +14,8 @@ For example, `claude/.claude/CLAUDE.md` becomes `~/.claude/CLAUDE.md`.
 brew install stow          # macOS
 git clone <this-repo> ~/dotfiles
 cd ~/dotfiles
+brew install betterleaks             # secret scanner used by pre-commit hook
+git config core.hooksPath hooks      # enable the hook (blocks committing secrets)
 ```
 
 The repo must live directly under `$HOME` (Stow's default target is the parent directory). If you clone it elsewhere, pass `-t ~` to every stow command.
