@@ -1,0 +1,2 @@
+# Sourced directly from .zshrc via $DOTFILES_DIR — must not be symlinked into ~
+secrets-.*\.zsh

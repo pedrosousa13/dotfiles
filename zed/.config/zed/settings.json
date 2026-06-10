@@ -7,26 +7,41 @@
 // custom settings, run the `open default settings` command
 // from the command palette or from `Zed` application menu.
 {
+  "cli_default_open_behavior": "new_window",
+  "collaboration_panel": {
+    "dock": "left"
+  },
+  "git_panel": {
+    "dock": "left"
+  },
+  "base_keymap": "Cursor",
+  "edit_predictions": {
+    "open_ai_compatible_api": {
+      "api_url": ""
+    },
+    "provider": "zed",
+    "mode": "eager"
+  },
   "outline_panel": {
+    "dock": "left",
     "button": false
   },
   "tabs": {
     "git_status": false,
     "file_icons": true
   },
-  "features": {
-    "edit_prediction_provider": "copilot"
-  },
   "project_panel": {
     "hide_gitignore": false,
     "dock": "right"
   },
-  "base_keymap": "Cursor",
   "agent": {
-    "always_allow_tool_actions": true,
+    "tool_permissions": {
+      "default": "allow"
+    },
+    "dock": "left",
     "default_model": {
       "provider": "copilot_chat",
-      "model": "claude-sonnet-4"
+      "model": "claude-sonnet-4.5"
     }
   },
   "indent_guides": {
@@ -42,7 +57,7 @@
   "buffer_font_size": 16,
   "tab_size": 2,
   "cursor_blink": true,
-  "buffer_font_family": "CaskaydiaMono Nerd Font Mono",
+  "buffer_font_family": "CaskaydiaMono Nerd Font",
   "preferred_line_length": 80,
   "buffer_line_height": "comfortable",
   "ui_font_family": "CaskaydiaMono Nerd Font",
@@ -91,17 +106,55 @@
           "includeInlayEnumMemberValueHints": true
         }
       }
+    },
+    "tailwindcss-language-server": {
+      "settings": {
+        "files": {
+          "exclude": [
+            "**/.git/**",
+            "**/node_modules/**",
+            "**/.hg/**",
+            "**/.svn/**",
+            "**/tailwind-presets/**.ts"
+          ]
+        },
+        "classFunctions": ["themeConfig"],
+        "classAttributes": [
+          "class",
+          "className",
+          "ngClass",
+          "class:list",
+          "themeConfig"
+        ],
+        "experimental": {
+          "classRegex": [
+            "([\"'`][^\"'`]*.*?[\"'`])",
+            "[\"'`]([^\"'`]*).*?[\"'`]"
+          ],
+          "configFile": "./tailwind.config.cjs"
+        }
+      }
     }
   },
+  "icon_theme": "Catppuccin Macchiato",
   "languages": {
     "JavaScript": {
-      "formatter": [{ "code_action": "source.fixAll.eslint" }]
+      "formatter": ["prettier", { "code_action": "source.fixAll.eslint" }]
     },
     "TypeScript": {
-      "formatter": [{ "code_action": "source.fixAll.eslint" }]
+      "formatter": ["prettier", { "code_action": "source.fixAll.eslint" }]
     },
     "TSX": {
-      "formatter": [{ "code_action": "source.fixAll.eslint" }]
+      "formatter": ["prettier", { "code_action": "source.fixAll.eslint" }]
+    }
+  },
+  "context_servers": {
+    "Sanity": {
+      "headers": {
+        "Authorization": ""
+      },
+      "settings": {},
+      "url": "https://mcp.sanity.io"
     }
   }
 }

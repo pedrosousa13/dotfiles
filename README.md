@@ -47,17 +47,16 @@ stow --adopt claude        # moves the existing file into the package, then syml
 
 ## Packages
 
-| Package    | What it configures                                            | Links to                             |
-| ---------- | ------------------------------------------------------------- | ------------------------------------ |
-| `claude`   | Global Claude Code instructions                               | `~/.claude/CLAUDE.md`                |
-| `gh-dash`  | [gh-dash](https://github.com/dlvhdr/gh-dash) GitHub dashboard | `~/.config/gh-dash/config.yml`       |
-| `hyprland` | Hyprland window manager (Linux)                               | `~/.config/hypr/hyprland.conf`       |
-| `vscode`   | VS Code settings (Linux path)                                 | `~/.config/Code/User/settings.json`  |
-| `zed`      | Zed editor settings and keymap                                | (flat files, not in stow layout yet) |
+| Package    | What it configures                                            | Links to                                              |
+| ---------- | ------------------------------------------------------------- | ----------------------------------------------------- |
+| `claude`   | Global Claude Code instructions                               | `~/.claude/CLAUDE.md`                                 |
+| `gh-dash`  | [gh-dash](https://github.com/dlvhdr/gh-dash) GitHub dashboard | `~/.config/gh-dash/config.yml`                        |
+| `hyprland` | Hyprland window manager (Linux)                               | `~/.config/hypr/hyprland.conf`                        |
+| `vscode`   | VS Code settings (macOS path)                                 | `~/Library/Application Support/Code/User/settings.json` |
+| `zed`      | Zed editor settings and keymap                                | `~/.config/zed/{settings,keymap}.json`                |
+| `zsh`      | Zsh config                                                    | `~/.zshrc`                                            |
 
-Not stowed:
+Notes:
 
-- `.zshrc` lives at the repo root and is symlinked directly: `ln -s ~/dotfiles/.zshrc ~/.zshrc`
-- `zsh/secrets-out.zsh` is sourced by `.zshrc` via `$DOTFILES_DIR`, no symlink needed
-
-Files matched by `.stow-local-ignore` (README, `.idea`, etc.) are never stowed.
+- `zsh/secrets-out.zsh` is gitignored and sourced by `.zshrc` via `$DOTFILES_DIR` — it is excluded from stowing by `zsh/.stow-local-ignore` (Stow reads ignore files from the package directory, not the repo root).
+- Stow may fold directories: a clean machine gets `~/.config/gh-dash -> dotfiles/gh-dash/.config/gh-dash` (whole dir) instead of per-file links. Both are fine.

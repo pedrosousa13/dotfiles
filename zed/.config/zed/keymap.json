@@ -19,5 +19,16 @@
     "bindings": {
       // "j k": "vim::NormalBefore"
     }
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-r": [
+        "projects::OpenRecent",
+        {
+          "create_new_window": true
+        }
+      ]
+    }
   }
 ]

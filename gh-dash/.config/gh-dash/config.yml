@@ -56,8 +56,36 @@ defaults:
   refetchIntervalMinutes: 30
 keybindings:
   issues: []
-  prs: []
-repoPaths: {}
+  prs:
+    - key: C
+      name: code review
+      command: >
+        cmux new-workspace --command
+        'cd {{.RepoPath}} && cmux rename-workspace "{{.HeadRefName}} #{{.PrNumber}}" && wt switch pr:{{.PrNumber}} -x "claude -p \"use /code-review:code-review to review PR #{{.PrNumber}} and comment on it with the results\""'
+repoPaths:
+  ef-global/backpack: ~/Documents/projects/backpack
+  ef-global/backpack-boilerplate-packages: ~/Documents/projects/backpack-boiler-pkgs
+  ef-global/backpack-header-monorepo: ~/Documents/projects/backpack-header-monorepo
+  ef-global/backpack-themes: ~/Documents/projects/backpack-themes
+  ef-global/backpack-sb-plugins: ~/Documents/projects/backpack-sb-plugins
+  ef-global/backpack-sb-plugins-react: ~/Documents/projects/backpack-sb-plugins-react
+  ef-global/backpack.ef.design: ~/Documents/projects/backpack.ef.design
+  ef-global/backpack-assets: ~/Documents/projects/backpack-assets
+  ef-global/content-hub-monorepo: ~/Documents/projects/content-hub-monorepo
+  ef-global/brand-hub: ~/Documents/projects/brand-hub
+  ef-global/create-backpack: ~/Documents/projects/create-backpack
+  ef-global/ef-code: ~/Documents/projects/ef-code
+  ef-global/careers: ~/Documents/projects/careers
+  ef-global/ef-sbc: ~/Documents/projects/ef-sbc
+  ef-global/ef.design: ~/Documents/projects/ef.design
+  ef-global/backpack-migrate: ~/Documents/projects/backpack-migrate
+  ef-global/storyblok-nextjs-backpack-boilerplate: ~/Documents/projects/storyblok-nextjs-backpack-boilerplate
+  ef-global/styles-dictionary-gud: ~/Documents/projects/backpack-tokens
+  ILC-Technology/product-sites: ~/Documents/projects/product-sites
+  ILC-Technology/martech-toolkit: ~/Documents/projects/martech-toolkit
+  ILC-Technology/martech-forms: ~/Documents/projects/martech-forms
+  ef-central-efcom/cefcom-sb-central-sites: ~/Documents/projects/cefcom-sb-central-sites
+  ef-central-efcom/cefcom-shared-components: ~/Documents/projects/cefcom-shared-components
 theme:
   ui:
     table:

@@ -3,3 +3,4 @@
 scripts
 secrets-in.zsh
 secrets-out.zsh
+.DS_Store
