@@ -1,11 +1,11 @@
 #!/bin/sh
 # Block commits containing secrets (API keys, tokens, credentials).
-# Requires gitleaks: brew install gitleaks
+# Requires betterleaks: brew install betterleaks
 # Enabled via: git config core.hooksPath hooks
 
-if ! command -v gitleaks >/dev/null 2>&1; then
-  echo "pre-commit: gitleaks not installed (brew install gitleaks) — refusing to commit unscanned." >&2
+if ! command -v betterleaks >/dev/null 2>&1; then
+  echo "pre-commit: betterleaks not installed (brew install betterleaks) — refusing to commit unscanned." >&2
   exit 1
 fi
 
-gitleaks git --staged --pre-commit --redact --verbose
+betterleaks git --staged --pre-commit --redact --verbose
