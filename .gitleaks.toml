@@ -1,0 +1,15 @@
+# Gitleaks config — extends default rules with patterns the defaults miss.
+# Used by hooks/pre-commit.
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "sanity-api-token"
+description = "Sanity API token (sk + long base62)"
+regex = '''\bsk[a-zA-Z0-9]{60,}\b'''
+
+[[rules]]
+id = "authorization-bearer"
+description = "Hardcoded Authorization Bearer token"
+regex = '''(?i)bearer\s+[a-z0-9_\-.=+/]{30,}'''
