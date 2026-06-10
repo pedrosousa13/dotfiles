@@ -1,1 +1,63 @@
 # dotfiles
+
+Personal dotfiles, managed with [GNU Stow](https://www.gnu.org/software/stow/).
+
+## How it works
+
+Each top-level directory is a Stow "package" that mirrors the file layout relative to `$HOME`. Stowing a package symlinks its files into your home directory.
+
+For example, `claude/.claude/CLAUDE.md` becomes `~/.claude/CLAUDE.md`.
+
+## Setup
+
+```sh
+brew install stow          # macOS
+git clone <this-repo> ~/dotfiles
+cd ~/dotfiles
+```
+
+The repo must live directly under `$HOME` (Stow's default target is the parent directory). If you clone it elsewhere, pass `-t ~` to every stow command.
+
+## Usage
+
+Stow a package:
+
+```sh
+cd ~/dotfiles
+stow claude
+```
+
+Remove a package's symlinks:
+
+```sh
+stow -D claude
+```
+
+Re-stow after adding/removing files in a package:
+
+```sh
+stow -R claude
+```
+
+If a real file already exists where a symlink would go, either delete it first, or let Stow absorb it into the repo:
+
+```sh
+stow --adopt claude        # moves the existing file into the package, then symlinks
+```
+
+## Packages
+
+| Package    | What it configures                                            | Links to                             |
+| ---------- | ------------------------------------------------------------- | ------------------------------------ |
+| `claude`   | Global Claude Code instructions                               | `~/.claude/CLAUDE.md`                |
+| `gh-dash`  | [gh-dash](https://github.com/dlvhdr/gh-dash) GitHub dashboard | `~/.config/gh-dash/config.yml`       |
+| `hyprland` | Hyprland window manager (Linux)                               | `~/.config/hypr/hyprland.conf`       |
+| `vscode`   | VS Code settings (Linux path)                                 | `~/.config/Code/User/settings.json`  |
+| `zed`      | Zed editor settings and keymap                                | (flat files, not in stow layout yet) |
+
+Not stowed:
+
+- `.zshrc` lives at the repo root and is symlinked directly: `ln -s ~/dotfiles/.zshrc ~/.zshrc`
+- `zsh/secrets-out.zsh` is sourced by `.zshrc` via `$DOTFILES_DIR`, no symlink needed
+
+Files matched by `.stow-local-ignore` (README, `.idea`, etc.) are never stowed.
