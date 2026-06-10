@@ -11,9 +11,13 @@ fi
 alias update-secrets='rm "${DOTFILES_DIR}/zsh/secrets-out.zsh" && op --account "my.1password.com" read op://Personal/zshrc_secrets/notesPlain --out-file "${DOTFILES_DIR}/zsh/secrets-out.zsh" && source "${DOTFILES_DIR}/zsh/secrets-out.zsh"'
 source "${DOTFILES_DIR}/zsh/secrets-out.zsh"
 
+# Inlined `brew shellenv` output — saves ~30ms fork; path_helper already ran via /etc/zprofile
 if [[ -f "/opt/homebrew/bin/brew" ]] then
-  # If you're using macOS, you'll want this enabled
-  eval "$(/opt/homebrew/bin/brew shellenv)"
+  export HOMEBREW_PREFIX="/opt/homebrew" HOMEBREW_CELLAR="/opt/homebrew/Cellar" HOMEBREW_REPOSITORY="/opt/homebrew"
+  export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+  export INFOPATH="/opt/homebrew/share/info:${INFOPATH:-}"
+  fpath[1,0]="/opt/homebrew/share/zsh/site-functions"
+  export FPATH
 fi
 
 
@@ -29,30 +33,41 @@ fi
 # Source/Load zinit
 source "${ZINIT_HOME}/zinit.zsh"
 
-# Add in zsh plugins
-zinit light zsh-users/zsh-syntax-highlighting
+# Add in zsh plugins (async loading with turbo mode)
+zinit ice wait lucid
 zinit light zsh-users/zsh-completions
-zinit light zsh-users/zsh-autosuggestions
-zinit light Aloxaf/fzf-tab
 
-# Add in snippets
-zinit snippet OMZP::git
-zinit snippet OMZP::sudo
-zinit snippet OMZP::archlinux
-zinit snippet OMZP::aws
-zinit snippet OMZP::kubectl
-zinit snippet OMZP::kubectx
-zinit snippet OMZP::command-not-found
+# zle plugins — Warp uses its own input editor, these never render there
+if [[ "$TERM_PROGRAM" != "WarpTerminal" ]]; then
+  # syntax highlighting via zsh-patina (activated at end of file);
+  # fall back to zsh-syntax-highlighting on machines without the binary
+  if ! command -v zsh-patina >/dev/null; then
+    zinit ice wait lucid
+    zinit light zsh-users/zsh-syntax-highlighting
+  fi
 
-# Load completions
-autoload -Uz compinit && compinit
+  zinit ice wait lucid
+  zinit light zsh-users/zsh-autosuggestions
+
+  zinit ice wait lucid
+  zinit light Aloxaf/fzf-tab
+fi
+
+# Load completions (full compinit audit at most once per 24h, else cached -C)
+fpath=(~/.zsh/completions $fpath)
+autoload -Uz compinit
+if [[ -n ~/.zcompdump(#qNmh-24) ]]; then
+  compinit -C
+else
+  compinit
+fi
 
 zinit cdreplay -q
 
-eval "$(oh-my-posh init zsh --config $HOME/.config/ohmyposh/catppuccin_frappe.omp.json)"
-
-if [ "$TERM_PROGRAM" != "Apple_Terminal" ]; then
-  eval "$(oh-my-posh init zsh)"
+# Starship prompt (faster than oh-my-posh)
+# Warp renders its own native prompt (HonorPS1=false) — starship would fork on every Enter for nothing
+if [[ "$TERM_PROGRAM" != "WarpTerminal" ]]; then
+  eval "$(starship init zsh)"
 fi
 
 # Keybindings
@@ -63,7 +78,7 @@ bindkey '^[[B' history-search-forward
 bindkey '^[w' kill-region
 
 # History
-HISTSIZE=5000
+HISTSIZE=1000000000
 HISTFILE=~/.zsh_history
 SAVEHIST=$HISTSIZE
 HISTDUP=erase
@@ -113,29 +128,35 @@ alias pformat="npx prisma format"
 alias lu="curl 'wttr.in/Luzern?Fn2'"
 alias we="curl 'wttr.in/?Fn2'"
 
+alias claudy="claude --dangerously-skip-permissions"
+
 # npm
 unalias npm 2>/dev/null
 npm() {
-  if command -v npq-hero &>/dev/null; then
-    npq-hero "$@" 2>/dev/null || {
-      echo "falling back to npm" >&2
+  case "$1" in
+    install|i|add)
+      if ! command -v npq-hero &>/dev/null; then
+        command npm install -g npq &>/dev/null
+      fi
+      if command -v npq-hero &>/dev/null; then
+        npq-hero "$@" 2>/dev/null || {
+          echo "falling back to npm" >&2
+          command npm "$@"
+        }
+      else
+        command npm "$@"
+      fi
+      ;;
+    *)
       command npm "$@"
-    }
-  else
-    command npm "$@"
-  fi
+      ;;
+  esac
 }
 
 
 # Shell integrations
 eval "$(fzf --zsh)"
 eval "$(zoxide init --cmd cd zsh)"
-
-if type brew &>/dev/null; then
-    FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
-    autoload -Uz compinit
-    compinit
-fi
 
 # cli plugins
 alias cat="bat"
@@ -153,12 +174,9 @@ pkg() {
   fi
 }
 
-# env
-export PATH="$(yarn global bin):$PATH"
-
-# fnm
+# fnm (lazy loading)
 export PATH="/Users/pedrosousa/Library/Application Support/fnm:$PATH"
-eval "$(fnm env --use-on-cd)"
+eval "$(fnm env --use-on-cd --shell zsh)"
 
 
 # Android SDK/Studio
@@ -181,3 +199,26 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+export PATH="$HOME/.local/bin:$PATH"
+
+# opencode
+export PATH=/Users/pedrosousa/.opencode/bin:$PATH
+
+# wt shell init, cached to file — regenerated when the wt binary updates
+if command -v wt >/dev/null 2>&1; then
+  _wt_init="$HOME/.cache/wt-init.zsh"
+  if [[ ! -s "$_wt_init" || "$(command -v wt)" -nt "$_wt_init" ]]; then
+    mkdir -p "$HOME/.cache"
+    command wt config shell init zsh > "$_wt_init"
+  fi
+  source "$_wt_init"
+  unset _wt_init
+fi
+
+# bun completions
+[ -s "/Users/pedrosousa/.bun/_bun" ] && source "/Users/pedrosousa/.bun/_bun"
+
+# zsh-patina syntax highlighting — must stay at end of file, zle terminals only
+if [[ "$TERM_PROGRAM" != "WarpTerminal" ]] && command -v zsh-patina >/dev/null; then
+  eval "$(zsh-patina activate)"
+fi
