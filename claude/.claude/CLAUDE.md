@@ -62,6 +62,8 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 Don't co-author in commits or PR's.
 
+Never mention that work was done with Claude / Claude Code (no attribution lines, footers, or "Generated with" notes) in commits, PRs, issues, comments, or any output. Never add reaction-prompt footers (e.g. "If this was useful, react with 👍").
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
