@@ -28,7 +28,7 @@ next_agent = "ctrl+alt+shift+cmd+period"
 enabled = false
 
 [ui.toast]
-delivery = "herdr"
+delivery = "terminal"
 
 [experimental]
 pane_history = true

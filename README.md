@@ -51,14 +51,37 @@ stow --adopt claude        # moves the existing file into the package, then syml
 
 | Package    | What it configures                                            | Links to                                              |
 | ---------- | ------------------------------------------------------------- | ----------------------------------------------------- |
-| `claude`   | Global Claude Code instructions                               | `~/.claude/CLAUDE.md`                                 |
+| `agents`   | Skill install lockfile ([skills](https://github.com/vercel-labs/skills) CLI provenance) | `~/.agents/.skill-lock.json`  |
+| `claude`   | Claude Code: instructions, settings, statusline               | `~/.claude/{CLAUDE.md,settings.json,statusline-account.sh}`, `~/.config/ccstatusline/settings.json` |
 | `gh-dash`  | [gh-dash](https://github.com/dlvhdr/gh-dash) GitHub dashboard | `~/.config/gh-dash/config.yml`                        |
+| `herdr`    | [Herdr](https://herdr.dev) terminal multiplexer (hyperkey bindings) | `~/.config/herdr/config.toml`                   |
 | `hyprland` | Hyprland window manager (Linux)                               | `~/.config/hypr/hyprland.conf`                        |
 | `vscode`   | VS Code settings (macOS path)                                 | `~/Library/Application Support/Code/User/settings.json` |
 | `zed`      | Zed editor settings and keymap                                | `~/.config/zed/{settings,keymap}.json`                |
 | `zsh`      | Zsh config                                                    | `~/.zshrc`                                            |
 
+## Claude Code two-account setup
+
+Work account uses the default `~/.claude`; personal uses `CLAUDE_CONFIG_DIR=~/.claude-personal` (see `claudy`/`claudly` aliases in `.zshrc`). Shared config (settings, skills, agents, commands, plugins) lives in `~/.claude`; the personal dir symlinks it and keeps only account data (auth, history, projects).
+
+New machine:
+
+```sh
+stow claude agents
+./claude/setup-personal.sh           # creates the ~/.claude-personal symlinks
+npx get-shit-done-cc --global        # reinstalls gsd hooks + skills (settings.json references them)
+claudy   # then /login (work)
+claudly  # then /login (personal)
+```
+
+Non-committed local files:
+
+- `~/.claude/statusline-accounts.env` — account emails read by `statusline-account.sh` (`PERSONAL_EMAIL=`, `WORK_EMAIL=`).
+- Skills in `~/.agents/skills` are reinstalled by the [skills](https://github.com/vercel-labs/skills) CLI; `~/.agents/.skill-lock.json` records each skill's source.
+- `settings.json` hooks hardcode an fnm node path — rerun the gsd install above if node versions differ.
+
 Notes:
 
 - `zsh/secrets-out.zsh` is gitignored and sourced by `.zshrc` via `$DOTFILES_DIR` — it is excluded from stowing by `zsh/.stow-local-ignore` (Stow reads ignore files from the package directory, not the repo root).
+- `claude/setup-personal.sh` is excluded from stowing by `claude/.stow-local-ignore` — run it from the repo.
 - Stow may fold directories: a clean machine gets `~/.config/gh-dash -> dotfiles/gh-dash/.config/gh-dash` (whole dir) instead of per-file links. Both are fine.

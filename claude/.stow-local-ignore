@@ -1,0 +1,2 @@
+# Bootstrap script, run from the repo — must not be symlinked into ~
+setup-personal\.sh

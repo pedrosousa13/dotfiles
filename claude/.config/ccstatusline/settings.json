@@ -1,0 +1,92 @@
+{
+  "version": 3,
+  "lines": [
+    [
+      {
+        "id": "account-label",
+        "type": "custom-command",
+        "commandPath": "/Users/pedrosousa/.claude/statusline-account.sh",
+        "preserveColors": true
+      },
+      {
+        "id": "account-label-sep",
+        "type": "separator"
+      },
+      {
+        "id": "1",
+        "type": "model",
+        "color": "brightBlack"
+      },
+      {
+        "id": "2",
+        "type": "separator"
+      },
+      {
+        "id": "b5ca325f-90ea-4f86-a233-225132fa07a7",
+        "type": "context-bar",
+        "color": "brightBlue"
+      },
+      {
+        "id": "4",
+        "type": "separator"
+      },
+      {
+        "id": "5",
+        "type": "git-branch",
+        "color": "brightGreen"
+      },
+      {
+        "id": "6",
+        "type": "separator"
+      },
+      {
+        "id": "7",
+        "type": "git-changes",
+        "color": "yellow"
+      },
+      {
+        "id": "71279820-0808-4f8f-a547-1059e6ffd657",
+        "type": "flex-separator"
+      }
+    ],
+    [],
+    [
+      {
+        "id": "ea32c9b3-013a-4992-921a-369bb9afa74c",
+        "type": "session-usage",
+        "metadata": {
+          "display": "progress-short"
+        }
+      },
+      {
+        "id": "a2e6af9f-a2a1-4cb0-9506-f3cad9651cdf",
+        "type": "separator"
+      },
+      {
+        "id": "4b0fad89-cc39-4bf8-81b4-1f6c91f28d5c",
+        "type": "reset-timer",
+        "metadata": {
+          "compact": "true"
+        },
+        "rawValue": false
+      }
+    ]
+  ],
+  "flexMode": "full-minus-40",
+  "compactThreshold": 60,
+  "colorLevel": 2,
+  "inheritSeparatorColors": false,
+  "globalBold": false,
+  "powerline": {
+    "enabled": false,
+    "separators": [
+      ""
+    ],
+    "separatorInvertBackground": [
+      false
+    ],
+    "startCaps": [],
+    "endCaps": [],
+    "autoAlign": false
+  }
+}
