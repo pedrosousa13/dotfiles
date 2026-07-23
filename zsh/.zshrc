@@ -38,19 +38,17 @@ zinit ice wait lucid
 zinit light zsh-users/zsh-completions
 
 # zle plugins — Warp uses its own input editor, these never render there
-if [[ "$TERM_PROGRAM" != "WarpTerminal" ]]; then
+if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]]; then
   # syntax highlighting via zsh-patina (activated at end of file);
   # fall back to zsh-syntax-highlighting on machines without the binary
   if ! command -v zsh-patina >/dev/null; then
-    zinit ice wait lucid
     zinit light zsh-users/zsh-syntax-highlighting
   fi
 
-  zinit ice wait lucid
+  # Loaded synchronously (no turbo): herdr's PTY input layer doesn't
+  # reliably fire zinit's post-prompt turbo scheduler, so ghost-text
+  # suggestions never appeared. fzf-tab loads after compinit (below).
   zinit light zsh-users/zsh-autosuggestions
-
-  zinit ice wait lucid
-  zinit light Aloxaf/fzf-tab
 fi
 
 # Load completions (full compinit audit at most once per 24h, else cached -C)
@@ -64,9 +62,14 @@ fi
 
 zinit cdreplay -q
 
+# fzf-tab must load after compinit / cdreplay
+if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]]; then
+  zinit light Aloxaf/fzf-tab
+fi
+
 # Starship prompt (faster than oh-my-posh)
 # Warp renders its own native prompt (HonorPS1=false) — starship would fork on every Enter for nothing
-if [[ "$TERM_PROGRAM" != "WarpTerminal" ]]; then
+if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]]; then
   eval "$(starship init zsh)"
 fi
 
@@ -128,7 +131,9 @@ alias pformat="npx prisma format"
 alias lu="curl 'wttr.in/Luzern?Fn2'"
 alias we="curl 'wttr.in/?Fn2'"
 
+# claudy = work account (default ~/.claude), claudly = personal (~/.claude-personal)
 alias claudy="claude --dangerously-skip-permissions"
+alias claudly='CLAUDE_CONFIG_DIR="$HOME/.claude-personal" claude --dangerously-skip-permissions'
 
 # npm
 unalias npm 2>/dev/null
@@ -188,6 +193,9 @@ eval "$(fnm env --use-on-cd --shell zsh)"
 # Rust
 export PATH="$HOME/.cargo/bin:$PATH"
 
+# Go
+export PATH="$HOME/go/bin:$PATH"
+
 # Q post block. Keep at the bottom of this file.
 # GPG
 export GPG_TTY=$(tty)
@@ -219,6 +227,9 @@ fi
 [ -s "/Users/pedrosousa/.bun/_bun" ] && source "/Users/pedrosousa/.bun/_bun"
 
 # zsh-patina syntax highlighting — must stay at end of file, zle terminals only
-if [[ "$TERM_PROGRAM" != "WarpTerminal" ]] && command -v zsh-patina >/dev/null; then
+if { [[ "$TERM_PROGRAM" != "WarpTerminal" ]] || [[ "$HERDR_ENV" == "1" ]]; } && command -v zsh-patina >/dev/null; then
   eval "$(zsh-patina activate)"
 fi
+
+# Radio France (cmus TUI)
+alias radio='cmus'
