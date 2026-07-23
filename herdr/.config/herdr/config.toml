@@ -1,0 +1,35 @@
+[ui]
+agent_panel_sort = "spaces"
+
+show_agent_labels_on_pane_borders = true
+[keys]
+prefix = "ctrl+alt+shift+cmd+a"
+switch_workspace = "ctrl+alt+shift+cmd+1..9"
+focus_pane_left = "ctrl+alt+shift+cmd+h"
+focus_pane_down = "ctrl+alt+shift+cmd+j"
+focus_pane_up = "ctrl+alt+shift+cmd+k"
+focus_pane_right = "ctrl+alt+shift+cmd+l"
+last_pane = "ctrl+alt+shift+cmd+tab"
+split_vertical = "ctrl+alt+shift+cmd+v"
+split_horizontal = "ctrl+alt+shift+cmd+s"
+zoom = "ctrl+alt+shift+cmd+z"
+close_pane = "ctrl+alt+shift+cmd+x"
+new_tab = "ctrl+alt+shift+cmd+t"
+next_tab = "ctrl+alt+shift+cmd+n"
+previous_tab = "ctrl+alt+shift+cmd+p"
+workspace_picker = "ctrl+alt+shift+cmd+w"
+goto = "ctrl+alt+shift+cmd+g"
+open_notification_target = "ctrl+alt+shift+cmd+o"
+toggle_sidebar = "ctrl+alt+shift+cmd+b"
+previous_agent = "ctrl+alt+shift+cmd+comma"
+next_agent = "ctrl+alt+shift+cmd+period"
+
+[ui.sound]
+enabled = false
+
+[ui.toast]
+delivery = "herdr"
+
+[experimental]
+pane_history = true
+switch_ascii_input_source_in_prefix = true
