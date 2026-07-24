@@ -1,9 +1,10 @@
 # ── Theme & Font (matches Warp setup) ─────────────────────────
 # Built-in theme names changed in newer Ghostty: "Catppuccin Macchiato", not "catppuccin-macchiato"
-theme = Catppuccin Mocha
+theme = dark:Catppuccin Mocha,light:Catppuccin Latte
 font-family = CaskaydiaMono NFM
 font-size = 14
 font-thicken = true
+adjust-cell-height = 8%
 
 # ── Window ────────────────────────────────────────────────────
 window-save-state = always
@@ -12,6 +13,7 @@ window-padding-y = 8
 window-padding-balance = true
 macos-titlebar-style = transparent
 window-colorspace = display-p3
+resize-overlay = never
 
 # ── Cursor ────────────────────────────────────────────────────
 cursor-style = block
@@ -20,14 +22,22 @@ cursor-style-blink = false
 # ── Shell integration & DX ────────────────────────────────────
 # auto-detects zsh; enables cwd inheritance, prompt jumping, title updates
 shell-integration = detect
+# Merges with the defaults rather than replacing them — the only non-default
+# here is `sudo` (default is no-sudo).
 shell-integration-features = cursor,sudo,title
 copy-on-select = clipboard
 clipboard-trim-trailing-spaces = true
 mouse-hide-while-typing = true
-scrollback-limit = 100000
+# Bytes per surface, not lines. Default is 10000000.
+scrollback-limit = 50000000
 
 # ── Keybinds ──────────────────────────────────────────────────
 keybind = global:option+space=toggle_visibility
+# Splits/tabs/workspaces are herdr's job (hyperkey bindings), not Ghostty's.
+#
+# Do NOT set `macos-option-as-alt`: Ghostty already sends CSI 1;3D/C for
+# option+arrow, which is what the .zshrc word-nav bindkeys expect, and
+# enabling it breaks option+c / option+a accented input.
 
 # ── Updates ───────────────────────────────────────────────────
 auto-update = check
