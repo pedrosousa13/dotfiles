@@ -1,5 +1,8 @@
+onboarding = false
 [ui]
 agent_panel_sort = "spaces"
+sidebar_min_width = 40
+sidebar_max_width = 90
 
 show_agent_labels_on_pane_borders = true
 [keys]
@@ -10,8 +13,8 @@ focus_pane_down = "ctrl+alt+shift+cmd+j"
 focus_pane_up = "ctrl+alt+shift+cmd+k"
 focus_pane_right = "ctrl+alt+shift+cmd+l"
 last_pane = "ctrl+alt+shift+cmd+tab"
-split_vertical = "ctrl+alt+shift+cmd+v"
-split_horizontal = "ctrl+alt+shift+cmd+s"
+split_vertical = "ctrl+alt+shift+cmd+d"
+split_horizontal = "ctrl+alt+shift+cmd+v"
 zoom = "ctrl+alt+shift+cmd+z"
 close_pane = "ctrl+alt+shift+cmd+x"
 new_tab = "ctrl+alt+shift+cmd+t"
@@ -33,3 +36,9 @@ delivery = "terminal"
 [experimental]
 pane_history = true
 switch_ascii_input_source_in_prefix = true
+
+# Give claude agents a dedicated activity line in the sidebar.
+# Row 2 = Claude's own terminal title; row 3 = live file activity set by the
+# herdr-title.sh PostToolUse hook via report-metadata --display-agent.
+[ui.sidebar.agents.rows_by_agent]
+claude = [["state_icon", "workspace", "tab"], ["terminal_title_stripped"], ["agent"]]

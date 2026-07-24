@@ -60,6 +60,16 @@
           }
         ],
         "matcher": "Read"
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash \"/Users/pedrosousa/.claude/hooks/herdr-title.sh\"",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "Edit|Write|MultiEdit"
       }
     ],
     "PreToolUse": [
