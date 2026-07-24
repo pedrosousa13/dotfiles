@@ -233,3 +233,9 @@ fi
 
 # Radio France (cmus TUI)
 alias radio='cmus'
+
+# Word navigation/deletion in raw ZLE (herdr panes, ssh) — Warp prompt unaffected
+bindkey '^[[1;3D' backward-word       # option+left
+bindkey '^[[1;3C' forward-word        # option+right
+bindkey '^[^?' backward-kill-word     # option+backspace (esc-del)
+bindkey '^[[3;3~' kill-word           # option+fn+delete (forward)
