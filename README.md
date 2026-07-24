@@ -53,6 +53,7 @@ stow --adopt claude        # moves the existing file into the package, then syml
 | ---------- | ------------------------------------------------------------- | ----------------------------------------------------- |
 | `agents`   | Skill install lockfile ([skills](https://github.com/vercel-labs/skills) CLI provenance) | `~/.agents/.skill-lock.json`  |
 | `claude`   | Claude Code: instructions, settings, statusline               | `~/.claude/{CLAUDE.md,settings.json,statusline-account.sh}`, `~/.config/ccstatusline/settings.json` |
+| `ghostty`  | [Ghostty](https://ghostty.org) terminal (theme, keybinds)     | `~/Library/Application Support/com.mitchellh.ghostty/config` |
 | `gh-dash`  | [gh-dash](https://github.com/dlvhdr/gh-dash) GitHub dashboard | `~/.config/gh-dash/config.yml`                        |
 | `herdr`    | [Herdr](https://herdr.dev) terminal multiplexer (hyperkey bindings) | `~/.config/herdr/config.toml`                   |
 | `hyprland` | Hyprland window manager (Linux)                               | `~/.config/hypr/hyprland.conf`                        |

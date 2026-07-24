@@ -1,0 +1,33 @@
+# ── Theme & Font (matches Warp setup) ─────────────────────────
+# Built-in theme names changed in newer Ghostty: "Catppuccin Macchiato", not "catppuccin-macchiato"
+theme = Catppuccin Mocha
+font-family = CaskaydiaMono NFM
+font-size = 14
+font-thicken = true
+
+# ── Window ────────────────────────────────────────────────────
+window-save-state = always
+window-padding-x = 8
+window-padding-y = 8
+window-padding-balance = true
+macos-titlebar-style = transparent
+window-colorspace = display-p3
+
+# ── Cursor ────────────────────────────────────────────────────
+cursor-style = block
+cursor-style-blink = false
+
+# ── Shell integration & DX ────────────────────────────────────
+# auto-detects zsh; enables cwd inheritance, prompt jumping, title updates
+shell-integration = detect
+shell-integration-features = cursor,sudo,title
+copy-on-select = clipboard
+clipboard-trim-trailing-spaces = true
+mouse-hide-while-typing = true
+scrollback-limit = 100000
+
+# ── Keybinds ──────────────────────────────────────────────────
+keybind = global:option+space=toggle_visibility
+
+# ── Updates ───────────────────────────────────────────────────
+auto-update = check
