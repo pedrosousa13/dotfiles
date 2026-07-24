@@ -31,6 +31,11 @@ new_worktree = "ctrl+alt+shift+cmd+f"
 open_worktree = "ctrl+alt+shift+cmd+e"
 remove_worktree = "ctrl+alt+shift+cmd+r"
 
+# Open the git-aware file tree (herdr-file-viewer) in its own tab.
+[[keys.command]]
+key = "ctrl+alt+shift+cmd+i"
+command = "herdr plugin action invoke open-file-viewer-tab --plugin herdr-file-viewer"
+
 [ui.sound]
 enabled = false
 
