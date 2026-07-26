@@ -250,7 +250,14 @@ fi
 
 # deja — predictive ghost-text suggestions, replaces zsh-autosuggestions.
 # Tab stays with fzf-tab, so deja's alternatives picker is unbound.
-if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]] && command -v deja >/dev/null; then
+#
+# Only initialise once per shell. deja wraps every ZLE widget, and a second
+# `eval` in the same shell (any `source ~/.zshrc`) wraps its own wrappers —
+# the widgets then recurse until zsh aborts with
+# "_deja_line_init: maximum nested function level reached".
+if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]] \
+   && command -v deja >/dev/null \
+   && (( ! ${+functions[_deja_precmd]} )); then
   export DEJA_CYCLE_KEY=''
   eval "$(deja init zsh)"
 fi
