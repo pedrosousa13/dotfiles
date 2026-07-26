@@ -1,15 +1,22 @@
 # zmodload zsh/zprof
+# Cross-platform zsh config — macOS and Linux run this same file. Every
+# platform-specific block is guarded on the binary or path it needs, so a
+# machine missing a tool skips it instead of erroring.
 export DOTFILES_DIR="${HOME}/dotfiles"
-secrets_out_path="${DOTFILES_DIR}/zsh/secrets-out.zsh"
 
-# secrets management
-if [ ! -f "$secrets_out_path" ]; then
-    echo "Creating ${secrets_out_path}..."
-    op --account "my.1password.com" read op://Personal/zshrc_secrets/notesPlain --out-file "${DOTFILES_DIR}/zsh/secrets-out.zsh"
+# secrets management — machines with the 1Password CLI only
+if command -v op >/dev/null; then
+  secrets_out_path="${DOTFILES_DIR}/zsh/secrets-out.zsh"
+
+  if [ ! -f "$secrets_out_path" ]; then
+      echo "Creating ${secrets_out_path}..."
+      op --account "my.1password.com" read op://Personal/zshrc_secrets/notesPlain --out-file "${DOTFILES_DIR}/zsh/secrets-out.zsh"
+  fi
+
+  alias update-secrets='rm "${DOTFILES_DIR}/zsh/secrets-out.zsh" && op --account "my.1password.com" read op://Personal/zshrc_secrets/notesPlain --out-file "${DOTFILES_DIR}/zsh/secrets-out.zsh" && source "${DOTFILES_DIR}/zsh/secrets-out.zsh"'
+  source "$secrets_out_path"
+  unset secrets_out_path
 fi
-
-alias update-secrets='rm "${DOTFILES_DIR}/zsh/secrets-out.zsh" && op --account "my.1password.com" read op://Personal/zshrc_secrets/notesPlain --out-file "${DOTFILES_DIR}/zsh/secrets-out.zsh" && source "${DOTFILES_DIR}/zsh/secrets-out.zsh"'
-source "${DOTFILES_DIR}/zsh/secrets-out.zsh"
 
 # Inlined `brew shellenv` output — saves ~30ms fork; path_helper already ran via /etc/zprofile
 if [[ -f "/opt/homebrew/bin/brew" ]] then
@@ -20,6 +27,10 @@ if [[ -f "/opt/homebrew/bin/brew" ]] then
   export FPATH
 fi
 
+# User-local bins, after brew so they win. Linux keeps starship/herdr/deja here.
+for d in "$HOME/go/bin" "$HOME/.cargo/bin" "$HOME/.local/bin"; do
+  [ -d "$d" ] && case ":$PATH:" in *":$d:"*) ;; *) export PATH="$d:$PATH";; esac
+done
 
 # Set the directory we want to store zinit and plugins
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
@@ -44,11 +55,8 @@ if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]]; then
   if ! command -v zsh-patina >/dev/null; then
     zinit light zsh-users/zsh-syntax-highlighting
   fi
-
-  # Loaded synchronously (no turbo): herdr's PTY input layer doesn't
-  # reliably fire zinit's post-prompt turbo scheduler, so ghost-text
-  # suggestions never appeared. fzf-tab loads after compinit (below).
-  zinit light zsh-users/zsh-autosuggestions
+  # Ghost-text suggestions come from deja (activated near the end of this
+  # file), which stands down if zsh-autosuggestions is loaded.
 fi
 
 # Load completions (full compinit audit at most once per 24h, else cached -C)
@@ -63,13 +71,13 @@ fi
 zinit cdreplay -q
 
 # fzf-tab must load after compinit / cdreplay
-if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]]; then
+if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]] && command -v fzf >/dev/null; then
   zinit light Aloxaf/fzf-tab
 fi
 
 # Starship prompt (faster than oh-my-posh)
 # Warp renders its own native prompt (HonorPS1=false) — starship would fork on every Enter for nothing
-if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]]; then
+if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]] && command -v starship >/dev/null; then
   eval "$(starship init zsh)"
 fi
 
@@ -101,7 +109,7 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
 # Aliases
-alias vim='nvim'
+command -v nvim >/dev/null && alias vim='nvim'
 alias c='clear'
 
 # git
@@ -114,10 +122,10 @@ alias glatest="git for-each-ref --sort=committerdate refs/heads/ --format='%(HEA
 alias gs="git status"
 alias grh="git reset --hard && git clean -df"
 
-# docker
-alias doup="docker-compose up -d"
-alias dodo="docker-compose down"
-alias dodov="docker-compose down -v"
+# docker (v2 subcommand — the standalone docker-compose binary is gone on both OSes)
+alias doup="docker compose up -d"
+alias dodo="docker compose down"
+alias dodov="docker compose down -v"
 
 # nx
 alias nx="npx nx"
@@ -160,14 +168,31 @@ npm() {
 
 
 # Shell integrations
-eval "$(fzf --zsh)"
-eval "$(zoxide init --cmd cd zsh)"
+# fzf 0.48+ has `fzf --zsh`; older Debian packages ship source files instead
+if command -v fzf >/dev/null; then
+  if fzf --zsh >/dev/null 2>&1; then
+    eval "$(fzf --zsh)"
+  else
+    for f in /usr/share/doc/fzf/examples/key-bindings.zsh \
+             /usr/share/doc/fzf/examples/completion.zsh; do
+      [ -r "$f" ] && source "$f"
+    done
+  fi
+fi
 
-# cli plugins
-alias cat="bat"
+command -v zoxide >/dev/null && eval "$(zoxide init --cmd cd zsh)"
+
+# cli plugins (Debian ships bat and fd under different binary names)
+if command -v bat >/dev/null; then
+  alias cat="bat"
+elif command -v batcat >/dev/null; then
+  alias cat="batcat"
+fi
+command -v fd >/dev/null || { command -v fdfind >/dev/null && alias fd="fdfind" }
 
 #---- Eza (better ls) -----
-alias ls="eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions"
+command -v eza >/dev/null && \
+  alias ls="eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions"
 
 pkg() {
   local pkg_manager
@@ -180,8 +205,8 @@ pkg() {
 }
 
 # fnm (lazy loading)
-export PATH="/Users/pedrosousa/Library/Application Support/fnm:$PATH"
-eval "$(fnm env --use-on-cd --shell zsh)"
+[ -d "$HOME/Library/Application Support/fnm" ] && export PATH="$HOME/Library/Application Support/fnm:$PATH"
+command -v fnm >/dev/null && eval "$(fnm env --use-on-cd --shell zsh)"
 
 
 # Android SDK/Studio
@@ -190,27 +215,24 @@ eval "$(fnm env --use-on-cd --shell zsh)"
 #export PATH=$PATH:$ANDROID_HOME/emulator
 #export PATH=$PATH:$ANDROID_HOME/platform-tools
 
-# Rust
-export PATH="$HOME/.cargo/bin:$PATH"
-
-# Go
-export PATH="$HOME/go/bin:$PATH"
-
 # Q post block. Keep at the bottom of this file.
 # GPG
 export GPG_TTY=$(tty)
 
 # pnpm
-export PNPM_HOME="/Users/pedrosousa/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
+for d in "$HOME/Library/pnpm" "$HOME/.local/share/pnpm"; do
+  if [ -d "$d" ]; then
+    export PNPM_HOME="$d"
+    case ":$PATH:" in
+      *":$PNPM_HOME:"*) ;;
+      *) export PATH="$PNPM_HOME:$PATH" ;;
+    esac
+  fi
+done
 # pnpm end
-export PATH="$HOME/.local/bin:$PATH"
 
 # opencode
-export PATH=/Users/pedrosousa/.opencode/bin:$PATH
+[ -d "$HOME/.opencode/bin" ] && export PATH="$HOME/.opencode/bin:$PATH"
 
 # wt shell init, cached to file — regenerated when the wt binary updates
 if command -v wt >/dev/null 2>&1; then
@@ -224,7 +246,14 @@ if command -v wt >/dev/null 2>&1; then
 fi
 
 # bun completions
-[ -s "/Users/pedrosousa/.bun/_bun" ] && source "/Users/pedrosousa/.bun/_bun"
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+
+# deja — predictive ghost-text suggestions, replaces zsh-autosuggestions.
+# Tab stays with fzf-tab, so deja's alternatives picker is unbound.
+if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]] && command -v deja >/dev/null; then
+  export DEJA_CYCLE_KEY=''
+  eval "$(deja init zsh)"
+fi
 
 # zsh-patina syntax highlighting — must stay at end of file, zle terminals only
 if { [[ "$TERM_PROGRAM" != "WarpTerminal" ]] || [[ "$HERDR_ENV" == "1" ]]; } && command -v zsh-patina >/dev/null; then
