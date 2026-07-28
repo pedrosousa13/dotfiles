@@ -56,6 +56,7 @@ stow --adopt claude        # moves the existing file into the package, then syml
 | `claude`   | Claude Code: instructions, settings, statusline               | `~/.claude/{CLAUDE.md,settings.json,statusline-account.sh}`, `~/.config/ccstatusline/settings.json` |
 | `ghostty`  | [Ghostty](https://ghostty.org) terminal (theme, keybinds)     | `~/Library/Application Support/com.mitchellh.ghostty/config` |
 | `gh-dash`  | [gh-dash](https://github.com/dlvhdr/gh-dash) GitHub dashboard | `~/.config/gh-dash/config.yml`                        |
+| `handy`    | Wayland-safe Handy Bluetooth microphone toggle (Linux)        | `~/.local/bin/handy-bt-toggle`                        |
 | `herdr`    | [Herdr](https://herdr.dev) terminal multiplexer (hyperkey bindings) | `~/.config/herdr/config.toml`                   |
 | `hyprland` | Hyprland window manager (Linux)                               | `~/.config/hypr/hyprland.conf`                        |
 | `vscode`   | VS Code settings (macOS path)                                 | `~/Library/Application Support/Code/User/settings.json` |
@@ -83,6 +84,50 @@ as the same modifier token, so one config covers both OSes.
 
 The terminal must speak the kitty keyboard protocol to transmit four-modifier
 chords — Ghostty and kitty both do.
+
+## Handy Bluetooth transcription on Linux
+
+Handy cannot use the CMF Buds Pro 2 microphone while the earbuds are in
+high-quality A2DP mode. Without profile management, PipeWire exposes the A2DP
+output monitor as the default input, so Handy records computer audio. The HFP
+microphone can also retain a muted state and deliver only zero-valued samples.
+
+The `handy-bt-toggle` wrapper switches to HFP/mSBC, waits for the real Bluetooth
+input, selects and unmutes it, then starts Handy. Stopping or cancelling restores
+A2DP, selects the earbuds as the default output, and unmutes them.
+
+Install the setup dependencies, start Handy once so it creates its settings
+file, then quit Handy fully:
+
+```sh
+sudo apt install stow jq
+cd ~/dotfiles
+./linux/setup-handy-bt.sh
+```
+
+The setup script:
+
+- Stows `handy/.local/bin/handy-bt-toggle`.
+- Configures the GNOME Wayland `Alt+Space` shortcut, reusing the existing Handy
+  shortcut slot wherever it exists and refusing to overwrite unrelated custom
+  shortcuts.
+- Changes only Handy's `mute_while_recording` setting; it does not commit or
+  replace `settings_store.json`, which may contain API keys.
+
+Setup refuses to run while Handy is active so the application cannot overwrite
+the patched setting with stale in-memory state. Start Handy again after setup
+finishes.
+
+The defaults target CMF Buds Pro 2 at `3C:B0:ED:C3:7A:22`. Override
+`HANDY_BT_CARD_NAME`, `HANDY_BT_MIC_SOURCE`, and `HANDY_BT_A2DP_SINK` in the
+wrapper environment for another headset. Expect a brief quality drop while HFP
+is active.
+
+Validate the setup logic without touching live audio or GNOME settings:
+
+```sh
+./linux/test-setup-handy-bt.sh
+```
 
 ## Claude Code two-account setup
 
