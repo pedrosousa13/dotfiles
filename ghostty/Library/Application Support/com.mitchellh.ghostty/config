@@ -35,6 +35,12 @@ scrollback-limit = 50000000
 keybind = global:option+space=toggle_visibility
 # Splits/tabs/workspaces are herdr's job (hyperkey bindings), not Ghostty's.
 #
+# cmd+k's default `clear_screen` action clears Ghostty's own grid, but herdr
+# runs a full-screen TUI and repaints every pane from its own buffer, so the
+# clear is invisible. Send FF (ctrl+l) instead — herdr forwards it to the
+# focused pane's PTY and the shell/agent clears itself.
+keybind = cmd+k=text:\x0c
+#
 # Do NOT set `macos-option-as-alt`: Ghostty already sends CSI 1;3D/C for
 # option+arrow, which is what the .zshrc word-nav bindkeys expect, and
 # enabling it breaks option+c / option+a accented input.
