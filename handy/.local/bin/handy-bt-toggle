@@ -1,0 +1,491 @@
+#!/usr/bin/env bash
+set -u
+
+PATH="/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:/usr/bin:/bin"
+export PATH
+
+CARD_NAME=${HANDY_BT_CARD_NAME:-bluez_card.3C_B0_ED_C3_7A_22}
+MIC_SOURCE=${HANDY_BT_MIC_SOURCE:-bluez_input.3C_B0_ED_C3_7A_22.0}
+A2DP_SINK=${HANDY_BT_A2DP_SINK:-bluez_output.3C_B0_ED_C3_7A_22.1}
+POLL_INTERVAL=${HANDY_BT_POLL_INTERVAL:-0.1}
+READY_TIMEOUT=${HANDY_BT_READY_TIMEOUT:-5}
+MAX_RECORDING_SECONDS=${HANDY_BT_MAX_RECORDING_SECONDS:-1800}
+COMMAND_TIMEOUT=${HANDY_BT_COMMAND_TIMEOUT:-3}
+RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+LOCK_FILE="$RUNTIME_DIR/handy-bt-toggle.lock"
+INIT_LOCK_FILE="$RUNTIME_DIR/handy-bt-toggle.init.lock"
+CANCEL_FILE="$RUNTIME_DIR/handy-bt-toggle.cancel"
+
+is_positive_finite() {
+  awk -v value="$1" '
+    BEGIN {
+      number = "^([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?$"
+      exit !(value ~ number && value + 0 > 0 && value + 0 <= 1000000000)
+    }
+  '
+}
+
+for setting in "$POLL_INTERVAL" "$READY_TIMEOUT" \
+  "$MAX_RECORDING_SECONDS" "$COMMAND_TIMEOUT"; do
+  if ! is_positive_finite "$setting"; then
+    printf 'handy-bt-toggle: timeouts must be positive finite numbers\n' >&2
+    exit 2
+  fi
+done
+
+resolve_command() {
+  command -v -- "$1" 2>/dev/null
+}
+
+PACTL_CMD=$(resolve_command "${HANDY_BT_PACTL_CMD:-pactl}") || {
+  printf 'handy-bt-toggle: pactl command not found\n' >&2
+  exit 2
+}
+HANDY_CMD=$(resolve_command "${HANDY_BT_HANDY_CMD:-handy}") || {
+  printf 'handy-bt-toggle: Handy command not found\n' >&2
+  exit 2
+}
+NOTIFY_CMD=$(resolve_command "${HANDY_BT_NOTIFY_CMD:-notify-send}") || {
+  printf 'handy-bt-toggle: notify-send command not found\n' >&2
+  exit 2
+}
+TIMEOUT_CMD=$(resolve_command "${HANDY_BT_TIMEOUT_CMD:-timeout}") || {
+  printf 'handy-bt-toggle: GNU timeout command not found\n' >&2
+  exit 2
+}
+
+run_bounded() {
+  "$TIMEOUT_CMD" --signal=TERM --kill-after="$COMMAND_TIMEOUT" \
+    "$COMMAND_TIMEOUT" "$@"
+}
+
+notify_user() {
+  local message=$1
+  run_bounded "$NOTIFY_CMD" "Handy" "$message" >/dev/null 2>&1 || true
+}
+
+duration_us() {
+  awk -v seconds="$1" 'BEGIN { printf "%.0f\n", seconds * 1000000 }'
+}
+
+now_us() {
+  printf '%s\n' "${EPOCHREALTIME/./}"
+}
+
+deadline_after() {
+  local interval_us
+  interval_us=$(duration_us "$1")
+  printf '%s\n' "$(( $(now_us) + interval_us ))"
+}
+
+deadline_reached() {
+  [[ $(now_us) -ge $1 ]]
+}
+
+sleep_until_deadline() {
+  local earliest=$1 candidate now remaining poll_us sleep_us sleep_seconds
+  shift
+  for candidate in "$@"; do
+    if [[ "$candidate" -gt 0 && "$candidate" -lt "$earliest" ]]; then
+      earliest=$candidate
+    fi
+  done
+  now=$(now_us)
+  remaining=$((earliest - now))
+  [[ "$remaining" -gt 0 ]] || return 0
+  poll_us=$(duration_us "$POLL_INTERVAL")
+  [[ "$poll_us" -gt 0 ]] || poll_us=1
+  sleep_us=$poll_us
+  [[ "$remaining" -ge "$sleep_us" ]] || sleep_us=$remaining
+  sleep_seconds=$(awk -v microseconds="$sleep_us" \
+    'BEGIN { printf "%.6f\n", microseconds / 1000000 }')
+  sleep "$sleep_seconds"
+}
+
+request_pending() {
+  [[ -e "$CANCEL_FILE" ]]
+}
+
+consume_request() {
+  request_pending || return 1
+  if ! rm -f "$CANCEL_FILE"; then
+    notify_user "Could not consume the stop request."
+    return 2
+  fi
+  return 0
+}
+
+source_state() {
+  local output
+  if ! output=$(run_bounded "$PACTL_CMD" list short sources 2>/dev/null); then
+    return 2
+  fi
+  if awk '{print $2}' <<< "$output" | grep -Fxq "$MIC_SOURCE"; then
+    return 0
+  fi
+  return 1
+}
+
+sink_state() {
+  local output
+  if ! output=$(run_bounded "$PACTL_CMD" list short sinks 2>/dev/null); then
+    return 2
+  fi
+  if awk '{print $2}' <<< "$output" | grep -Fxq "$A2DP_SINK"; then
+    return 0
+  fi
+  return 1
+}
+
+capture_state() {
+  local output
+  if ! output=$(run_bounded "$PACTL_CMD" list source-outputs 2>/dev/null); then
+    return 2
+  fi
+  if grep -Fq 'application.name = "PipeWire ALSA [handy]"' <<< "$output"; then
+    return 0
+  fi
+  return 1
+}
+
+wait_for_source() {
+  local deadline state
+  deadline=$(deadline_after "$READY_TIMEOUT")
+  while true; do
+    if request_pending; then
+      consume_request || return 3
+      return 2
+    fi
+    source_state
+    state=$?
+    if [[ "$state" -eq 0 ]]; then
+      if request_pending; then
+        consume_request || return 3
+        return 2
+      fi
+      return 0
+    fi
+    if deadline_reached "$deadline"; then
+      if request_pending; then
+        consume_request || return 3
+        return 2
+      fi
+      return 1
+    fi
+    sleep_until_deadline "$deadline"
+  done
+}
+
+wait_for_sink() {
+  local deadline state
+  deadline=$(deadline_after "$READY_TIMEOUT")
+  while true; do
+    sink_state
+    state=$?
+    [[ "$state" -eq 0 ]] && return 0
+    deadline_reached "$deadline" && return 1
+    sleep_until_deadline "$deadline"
+  done
+}
+
+restore_a2dp() {
+  local failed=false
+  if ! run_bounded "$PACTL_CMD" set-card-profile \
+    "$CARD_NAME" a2dp-sink >/dev/null 2>&1; then
+    notify_user "Could not restore the Bluetooth A2DP profile."
+    return 1
+  fi
+  if ! wait_for_sink; then
+    notify_user "Bluetooth A2DP output did not become ready."
+    return 1
+  fi
+  if ! run_bounded "$PACTL_CMD" set-default-sink \
+    "$A2DP_SINK" >/dev/null 2>&1; then
+    notify_user "Could not select the Bluetooth A2DP output."
+    failed=true
+  fi
+  if ! run_bounded "$PACTL_CMD" set-sink-mute \
+    "$A2DP_SINK" 0 >/dev/null 2>&1; then
+    notify_user "Could not unmute the Bluetooth A2DP output."
+    failed=true
+  fi
+  [[ "$failed" == false ]]
+}
+
+PHASE=preparing
+CANCEL_ACTION_ATTEMPTED=false
+CANCEL_ACTION_STATUS=0
+STOP_ACTION_ATTEMPTED=false
+STOP_ACTION_STATUS=0
+
+cancel_handy() {
+  local failure_message=$1
+  if [[ "$CANCEL_ACTION_ATTEMPTED" == true ]]; then
+    return "$CANCEL_ACTION_STATUS"
+  fi
+  CANCEL_ACTION_ATTEMPTED=true
+  run_bounded "$HANDY_CMD" --cancel >/dev/null 2>&1
+  CANCEL_ACTION_STATUS=$?
+  if [[ "$CANCEL_ACTION_STATUS" -ne 0 ]]; then
+    notify_user "$failure_message"
+  fi
+  return "$CANCEL_ACTION_STATUS"
+}
+
+stop_handy() {
+  if [[ "$STOP_ACTION_ATTEMPTED" == true ]]; then
+    return "$STOP_ACTION_STATUS"
+  fi
+  STOP_ACTION_ATTEMPTED=true
+  run_bounded "$HANDY_CMD" --toggle-transcription >/dev/null 2>&1
+  STOP_ACTION_STATUS=$?
+  if [[ "$STOP_ACTION_STATUS" -ne 0 ]]; then
+    notify_user "Could not stop Handy transcription."
+  fi
+  return "$STOP_ACTION_STATUS"
+}
+
+cleanup() {
+  local exit_status=$? restore_status=0 marker_status=0
+  trap - EXIT INT TERM
+  restore_a2dp || restore_status=$?
+  if ! rm -f "$CANCEL_FILE"; then
+    notify_user "Could not remove the stop request marker."
+    marker_status=1
+  fi
+  if [[ "$exit_status" -eq 0 ]]; then
+    if [[ "$restore_status" -ne 0 ]]; then
+      exit_status=$restore_status
+    elif [[ "$marker_status" -ne 0 ]]; then
+      exit_status=$marker_status
+    fi
+  fi
+  exit "$exit_status"
+}
+
+handle_signal() {
+  local signal_status=$1
+  trap '' INT TERM
+  case "$PHASE" in
+    starting|active|stopping)
+      cancel_handy "Could not cancel Handy after interruption." || true
+      ;;
+  esac
+  exit "$signal_status"
+}
+
+wait_until_inactive() {
+  local deadline state error_deadline=0
+  deadline=$(deadline_after "$READY_TIMEOUT")
+  while true; do
+    if request_pending; then
+      consume_request || {
+        [[ $? -eq 1 ]] || return 1
+      }
+    fi
+    capture_state
+    state=$?
+    case "$state" in
+      0)
+        error_deadline=0
+        ;;
+      1)
+        PHASE=done
+        return 0
+        ;;
+      2)
+        if [[ "$error_deadline" -eq 0 ]]; then
+          error_deadline=$(deadline_after "$READY_TIMEOUT")
+        elif deadline_reached "$error_deadline"; then
+          notify_user "Could not determine whether Handy released its microphone."
+          return 1
+        fi
+        ;;
+    esac
+    if deadline_reached "$deadline"; then
+      notify_user "Handy did not release its microphone in time."
+      return 1
+    fi
+    sleep_until_deadline "$deadline" "$error_deadline"
+  done
+}
+
+mkdir -p "$RUNTIME_DIR" || exit 1
+exec 8>"$INIT_LOCK_FILE"
+if ! flock -w "$COMMAND_TIMEOUT" 8; then
+  notify_user "Could not initialize the Bluetooth toggle lock."
+  exit 1
+fi
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+  request_status=0
+  touch "$CANCEL_FILE" || request_status=$?
+  flock -u 8 || request_status=1
+  exec 8>&-
+  exit "$request_status"
+fi
+if ! rm -f "$CANCEL_FILE"; then
+  notify_user "Could not clear the stale stop request."
+  flock -u 8 || true
+  exec 8>&-
+  exit 1
+fi
+flock -u 8
+exec 8>&-
+
+trap cleanup EXIT
+trap 'handle_signal 130' INT
+trap 'handle_signal 143' TERM
+
+if ! run_bounded "$PACTL_CMD" set-card-profile \
+  "$CARD_NAME" headset-head-unit-msbc >/dev/null 2>&1; then
+  notify_user "Could not enable the Bluetooth microphone."
+  exit 1
+fi
+
+wait_for_source
+source_result=$?
+case "$source_result" in
+  2)
+    exit 0
+    ;;
+  1)
+    notify_user "Bluetooth microphone did not become ready."
+    exit 1
+    ;;
+  3)
+    exit 1
+    ;;
+esac
+
+if request_pending; then
+  consume_request
+  exit $?
+fi
+
+if ! run_bounded "$PACTL_CMD" set-default-source \
+  "$MIC_SOURCE" >/dev/null 2>&1; then
+  notify_user "Could not select the Bluetooth microphone."
+  exit 1
+fi
+
+if ! run_bounded "$PACTL_CMD" set-source-mute \
+  "$MIC_SOURCE" 0 >/dev/null 2>&1; then
+  notify_user "Could not unmute the Bluetooth microphone."
+  exit 1
+fi
+
+if request_pending; then
+  consume_request
+  exit $?
+fi
+
+PHASE=starting
+if ! run_bounded "$HANDY_CMD" --toggle-transcription >/dev/null 2>&1; then
+  notify_user "Could not start Handy transcription."
+  cancel_handy "Could not cancel Handy after its start action failed." || true
+  exit 1
+fi
+
+start_deadline=$(deadline_after "$READY_TIMEOUT")
+saw_capture_state=false
+while [[ "$PHASE" == starting ]]; do
+  if request_pending; then
+    if ! consume_request; then
+      exit 1
+    fi
+    cancel_status=0
+    cancel_handy "Could not cancel Handy while it was starting." ||
+      cancel_status=$?
+    PHASE=stopping
+    if ! wait_until_inactive; then
+      exit 1
+    fi
+    [[ "$cancel_status" -eq 0 ]] || exit 1
+    exit 0
+  fi
+
+  capture_state
+  capture_result=$?
+  case "$capture_result" in
+    0)
+      saw_capture_state=true
+      PHASE=active
+      ;;
+    1)
+      saw_capture_state=true
+      ;;
+  esac
+  [[ "$PHASE" == active ]] && break
+  if deadline_reached "$start_deadline"; then
+    cancel_handy "Could not cancel Handy after its microphone failed to open." ||
+      exit 1
+    if [[ "$saw_capture_state" == true ]]; then
+      notify_user "Handy did not open its microphone stream."
+    else
+      notify_user "Could not determine whether Handy opened its microphone."
+    fi
+    exit 1
+  fi
+  sleep_until_deadline "$start_deadline"
+done
+
+recording_deadline=$(deadline_after "$MAX_RECORDING_SECONDS")
+query_error_deadline=0
+while true; do
+  if request_pending; then
+    if ! consume_request; then
+      exit 1
+    fi
+    if [[ "$PHASE" == active ]]; then
+      stop_status=0
+      stop_handy || stop_status=$?
+      PHASE=stopping
+      if ! wait_until_inactive; then
+        exit 1
+      fi
+      [[ "$stop_status" -eq 0 ]] || exit 1
+      exit 0
+    fi
+  fi
+
+  capture_state
+  capture_result=$?
+  case "$capture_result" in
+    0)
+      query_error_deadline=0
+      ;;
+    1)
+      PHASE=done
+      exit 0
+      ;;
+    2)
+      if [[ "$query_error_deadline" -eq 0 ]]; then
+        query_error_deadline=$(deadline_after "$READY_TIMEOUT")
+      elif deadline_reached "$query_error_deadline"; then
+        cancel_handy "Could not cancel Handy after capture-state queries failed." ||
+          true
+        PHASE=stopping
+        wait_until_inactive || true
+        notify_user "Could not determine whether Handy was still recording."
+        exit 1
+      fi
+      ;;
+  esac
+
+  if deadline_reached "$recording_deadline"; then
+    cancel_status=0
+    cancel_handy "Recording timed out, but Handy could not be cancelled." ||
+      cancel_status=$?
+    if [[ "$cancel_status" -eq 0 ]]; then
+      notify_user "Recording timed out and was cancelled."
+    fi
+    PHASE=stopping
+    if ! wait_until_inactive; then
+      exit 1
+    fi
+    [[ "$cancel_status" -eq 0 ]] || exit "$cancel_status"
+    exit 0
+  fi
+  sleep_until_deadline "$recording_deadline" "$query_error_deadline"
+done
