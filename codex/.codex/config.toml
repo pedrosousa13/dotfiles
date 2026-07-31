@@ -1,0 +1,109 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+service_tier = "default"
+
+[features]
+hooks = true
+
+[projects."/Users/pedrosousa/Documents/apps/montra"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/experiments/site-diff"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/brand-hub"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/experiments/KeibiDrop"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/experiments/JSON-Alexander"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/backpack-assets"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/apps/experiments/sanity-test"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/backpack"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/apps/gcdev-skills"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/experiments/json-bonsai"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/backpack-boiler-pkgs"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/apps/storyblok-nextjs-backpack-boilerplate"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/marketing-web-2.0"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/apps/backpack-boilerplate-packages"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/experiments/onda"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/ccap-gud5"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/ll-marketing-frontend"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/experiments/psousa.dev-astro"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/apps/backpack"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/experiments/amberdb"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/experiments"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/experiments/ferry"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/projects/experiments/video-player"]
+trust_level = "trusted"
+
+[tui]
+status_line = [
+  "model-with-reasoning",
+  "current-dir",
+  "git-branch",
+  "run-state",
+  "context-remaining",
+  "five-hour-limit",
+  "weekly-limit"
+]
+status_line_use_colors = true
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+"gpt-5.6-sol" = 4
+
+[notice]
+fast_default_opt_out = true
+
+[plugins."superpowers@openai-curated"]
+enabled = true
+
+[mcp_servers.vercel]
+url = "https://mcp.vercel.com"
+enabled = false
+
+[mcp_servers.linear]
+url = "https://mcp.linear.app/mcp"
+
+[hooks.state]
+
+[hooks.state."/Users/pedrosousa/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:4f6ae243572aaeb6b53f74ff8cf4a94be1715bb7cb3c8614b36560e2934ad954"

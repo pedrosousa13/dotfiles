@@ -1,0 +1,15 @@
+{
+  "lastChangelogVersion": "0.83.0",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.6-sol",
+  "defaultThinkingLevel": "high",
+  "images": {
+    "blockImages": false
+  },
+  "theme": "catppuccin-mocha",
+  "packages": [
+    "npm:@narumitw/pi-usage@0.40.1",
+    "npm:@narumitw/pi-statusline@0.40.1",
+    "npm:pi-catppuccin"
+  ]
+}

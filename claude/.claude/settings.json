@@ -1,7 +1,53 @@
 {
-  "autoUpdatesChannel": "latest",
-  "editorMode": "normal",
-  "effortLevel": "high",
+  "permissions": {
+    "allow": [],
+    "defaultMode": "default"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/pedrosousa/.claude/hooks/herdr-why.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/pedrosousa/.claude/hooks/herdr-title.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/pedrosousa/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  },
+  "worktree": {
+    "baseRef": "fresh"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "npx -y ccstatusline@latest",
+    "padding": 0
+  },
   "enabledPlugins": {
     "caveman@caveman": true,
     "code-review@claude-plugins-official": true,
@@ -18,165 +64,24 @@
   "extraKnownMarketplaces": {
     "caveman": {
       "source": {
-        "repo": "JuliusBrussee/caveman",
-        "source": "github"
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
       }
     },
     "claude-code-warp": {
       "source": {
-        "repo": "warpdotdev/claude-code-warp",
-        "source": "github"
+        "source": "github",
+        "repo": "warpdotdev/claude-code-warp"
       }
     }
   },
-  "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "command": "bash \"/Users/pedrosousa/.claude/hooks/herdr-why.sh\"",
-            "timeout": 5,
-            "type": "command"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "\"/Users/pedrosousa/Library/Application Support/fnm/node-versions/v22.18.0/installation/bin/node\" \"/Users/pedrosousa/.claude/hooks/gsd-context-monitor.js\"",
-            "timeout": 10,
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash|Edit|Write|MultiEdit|Agent|Task"
-      },
-      {
-        "hooks": [
-          {
-            "command": "bash \"/Users/pedrosousa/.claude/hooks/gsd-phase-boundary.sh\"",
-            "timeout": 5,
-            "type": "command"
-          }
-        ],
-        "matcher": "Write|Edit"
-      },
-      {
-        "hooks": [
-          {
-            "command": "\"/Users/pedrosousa/Library/Application Support/fnm/node-versions/v22.18.0/installation/bin/node\" \"/Users/pedrosousa/.claude/hooks/gsd-read-injection-scanner.js\"",
-            "timeout": 5,
-            "type": "command"
-          }
-        ],
-        "matcher": "Read"
-      },
-      {
-        "hooks": [
-          {
-            "command": "bash \"/Users/pedrosousa/.claude/hooks/herdr-title.sh\"",
-            "timeout": 5,
-            "type": "command"
-          }
-        ],
-        "matcher": "Edit|Write|MultiEdit"
-      }
-    ],
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "\"/Users/pedrosousa/Library/Application Support/fnm/node-versions/v22.18.0/installation/bin/node\" \"/Users/pedrosousa/.claude/hooks/gsd-prompt-guard.js\"",
-            "timeout": 5,
-            "type": "command"
-          }
-        ],
-        "matcher": "Write|Edit"
-      },
-      {
-        "hooks": [
-          {
-            "command": "\"/Users/pedrosousa/Library/Application Support/fnm/node-versions/v22.18.0/installation/bin/node\" \"/Users/pedrosousa/.claude/hooks/gsd-read-guard.js\"",
-            "timeout": 5,
-            "type": "command"
-          }
-        ],
-        "matcher": "Write|Edit"
-      },
-      {
-        "hooks": [
-          {
-            "command": "\"/Users/pedrosousa/Library/Application Support/fnm/node-versions/v22.18.0/installation/bin/node\" \"/Users/pedrosousa/.claude/hooks/gsd-workflow-guard.js\"",
-            "timeout": 5,
-            "type": "command"
-          }
-        ],
-        "matcher": "Write|Edit"
-      },
-      {
-        "hooks": [
-          {
-            "command": "bash \"/Users/pedrosousa/.claude/hooks/gsd-validate-commit.sh\"",
-            "timeout": 5,
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "command": "\"/Users/pedrosousa/Library/Application Support/fnm/node-versions/v22.18.0/installation/bin/node\" \"$HOME/.claude/hooks/gsd-check-update.js\"",
-            "type": "command"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "command": "bash \"/Users/pedrosousa/.claude/hooks/gsd-session-state.sh\"",
-            "type": "command"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "command": "\"/Users/pedrosousa/Library/Application Support/fnm/node-versions/v22.18.0/installation/bin/node\" \"/Users/pedrosousa/.claude/hooks/gsd-update-banner.js\"",
-            "type": "command"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "command": "bash '/Users/pedrosousa/.claude/hooks/herdr-agent-state.sh' session",
-            "timeout": 10,
-            "type": "command"
-          }
-        ],
-        "matcher": "*"
-      }
-    ]
-  },
-  "permissions": {
-    "allow": [],
-    "defaultMode": "default"
-  },
-  "skipAutoPermissionPrompt": true,
-  "skipDangerousModePermissionPrompt": true,
-  "statusLine": {
-    "command": "npx -y ccstatusline@latest",
-    "padding": 0,
-    "type": "command"
-  },
-  "theme": "dark-ansi",
+  "effortLevel": "high",
+  "autoUpdatesChannel": "latest",
   "tui": "fullscreen",
-  "voiceEnabled": false,
-  "worktree": {
-    "baseRef": "fresh"
-  }
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "dark-ansi",
+  "editorMode": "normal",
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true,
+  "voiceEnabled": false
 }
