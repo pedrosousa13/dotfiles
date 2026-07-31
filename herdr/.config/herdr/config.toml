@@ -7,7 +7,7 @@ sidebar_max_width = 90
 show_agent_labels_on_pane_borders = false
 [keys]
 prefix = "ctrl+alt+shift+cmd+a"
-switch_workspace = "ctrl+alt+shift+cmd+1..9"
+focus_agent = "ctrl+alt+shift+cmd+1..9"
 focus_pane_left = "ctrl+alt+shift+cmd+h"
 focus_pane_down = "ctrl+alt+shift+cmd+j"
 focus_pane_up = "ctrl+alt+shift+cmd+k"
