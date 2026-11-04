@@ -29,7 +29,7 @@ copy-on-select = clipboard
 clipboard-trim-trailing-spaces = true
 mouse-hide-while-typing = true
 # Bytes per surface, not lines. Default is 10000000.
-scrollback-limit = 50000000
+scrollback-limit = 9223372036854775807
 
 # ── Keybinds ──────────────────────────────────────────────────
 keybind = global:option+space=toggle_visibility

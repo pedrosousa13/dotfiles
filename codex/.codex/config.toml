@@ -2,6 +2,11 @@ model = "gpt-5.6-sol"
 model_reasoning_effort = "high"
 service_tier = "default"
 
+[agents]
+enabled = true
+default_subagent_model = "gpt-5.6-luna"
+default_subagent_reasoning_effort = "xhigh"
+
 [features]
 hooks = true
 
@@ -74,6 +79,102 @@ trust_level = "trusted"
 [projects."/Users/pedrosousa/Documents/projects/experiments/video-player"]
 trust_level = "trusted"
 
+[projects."/Users/pedrosousa/Documents/apps/factory"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-ycmnOb"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-maimLu"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-F6CgMB"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-CNY3A3"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-l9reFh"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-zlFkWz"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-5jQaC4"]
+trust_level = "trusted"
+
+[projects."/private/tmp/claude-501/-Users-pedrosousa-Documents-apps-factory/527653c1-abd3-4ddf-86b6-959c637af091/scratchpad"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-t778pv"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-b4jIOe"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-JCbMEY"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-tGswmN"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-jWmeHe"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-t1YbiJ"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-9uXnoH"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-AKWBEW"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-IUym6d"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-MuZ48b"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-LsWmi3"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-KtIjxs"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-1ewF3G"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-9WPOjC"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-TqSGmd"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-pP0dVl"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-Z1bhPw"]
+trust_level = "trusted"
+
+[projects."/private/var/folders/_f/tz4_3kv1181510d4txjkby740000gn/T/factory-coderepo-l1jLC1"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/apps/reely"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/apps"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/apps/logitec"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa/Documents/apps/app-router-backpack-boilerplate"]
+trust_level = "trusted"
+
+[projects."/Users/pedrosousa"]
+trust_level = "trusted"
+
 [tui]
 status_line = [
   "model-with-reasoning",
@@ -89,6 +190,7 @@ status_line_use_colors = true
 [tui.model_availability_nux]
 "gpt-5.5" = 4
 "gpt-5.6-sol" = 4
+gpt-6-astra = 4
 
 [notice]
 fast_default_opt_out = true

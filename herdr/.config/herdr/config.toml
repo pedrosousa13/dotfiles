@@ -55,3 +55,9 @@ claude = [["state_icon", "workspace", "tab"], ["terminal_title_stripped"], ["age
 # Show branch + dirty state per space — worktree-heavy GSD flow.
 [ui.sidebar.spaces]
 rows = [["state_icon", "workspace"], ["branch", "git_status"]]
+
+[advanced]
+# Max value a TOML integer can hold (i64 max, ~9.2 exabytes). Ghostty core
+# has no unlimited option, so this is the closest stand-in. The buffer is
+# allocated lazily, so a pane only uses the memory it actually fills.
+scrollback_limit_bytes = 9223372036854775807
