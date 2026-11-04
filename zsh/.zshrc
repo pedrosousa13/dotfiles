@@ -4,6 +4,27 @@
 # machine missing a tool skips it instead of erroring.
 export DOTFILES_DIR="${HOME}/dotfiles"
 
+# Cap processes per user for this shell and its children, so a runaway build
+# (e.g. a package script calling `turbo build` recursively) fails with
+# "fork: Resource temporarily unavailable" instead of filling RAM and swap.
+# Soft limit only: raise it for one shell with `ulimit -u 6000`.
+ulimit -u 2000 2>/dev/null
+
+# Source the cached output of a static `<tool> init` command instead of forking
+# the tool on every shell start. The cache regenerates when the tool binary is
+# newer than the cache file. Reset all caches: rm -rf ~/.cache/zsh-init
+_cached_init() {
+  local name=$1; shift
+  local bin=${commands[$1]}
+  [[ -n $bin ]] || return 1
+  local f="$HOME/.cache/zsh-init/$name.zsh"
+  if [[ ! -s $f || $bin -nt $f ]]; then
+    mkdir -p ${f:h}
+    "$@" >| $f 2>/dev/null || { rm -f $f; return 1; }
+  fi
+  source $f
+}
+
 # secrets management — machines with the 1Password CLI only
 if command -v op >/dev/null; then
   secrets_out_path="${DOTFILES_DIR}/zsh/secrets-out.zsh"
@@ -77,8 +98,8 @@ fi
 
 # Starship prompt (faster than oh-my-posh)
 # Warp renders its own native prompt (HonorPS1=false) — starship would fork on every Enter for nothing
-if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]] && command -v starship >/dev/null; then
-  eval "$(starship init zsh)"
+if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]]; then
+  _cached_init starship starship init zsh --print-full-init
 fi
 
 # Keybindings
@@ -170,9 +191,7 @@ npm() {
 # Shell integrations
 # fzf 0.48+ has `fzf --zsh`; older Debian packages ship source files instead
 if command -v fzf >/dev/null; then
-  if fzf --zsh >/dev/null 2>&1; then
-    eval "$(fzf --zsh)"
-  else
+  if ! _cached_init fzf fzf --zsh; then
     for f in /usr/share/doc/fzf/examples/key-bindings.zsh \
              /usr/share/doc/fzf/examples/completion.zsh; do
       [ -r "$f" ] && source "$f"
@@ -180,7 +199,7 @@ if command -v fzf >/dev/null; then
   fi
 fi
 
-command -v zoxide >/dev/null && eval "$(zoxide init --cmd cd zsh)"
+_cached_init zoxide zoxide init --cmd cd zsh
 
 # cli plugins (Debian ships bat and fd under different binary names)
 if command -v bat >/dev/null; then
@@ -217,7 +236,7 @@ command -v fnm >/dev/null && eval "$(fnm env --use-on-cd --shell zsh)"
 
 # Q post block. Keep at the bottom of this file.
 # GPG
-export GPG_TTY=$(tty)
+export GPG_TTY=$TTY  # zsh built-in; same value as $(tty) without the fork
 
 # pnpm
 for d in "$HOME/Library/pnpm" "$HOME/.local/share/pnpm"; do
@@ -237,7 +256,7 @@ done
 # wt shell init, cached to file — regenerated when the wt binary updates
 if command -v wt >/dev/null 2>&1; then
   _wt_init="$HOME/.cache/wt-init.zsh"
-  if [[ ! -s "$_wt_init" || "$(command -v wt)" -nt "$_wt_init" ]]; then
+  if [[ ! -s "$_wt_init" || "${commands[wt]}" -nt "$_wt_init" ]]; then
     mkdir -p "$HOME/.cache"
     command wt config shell init zsh > "$_wt_init"
   fi
@@ -247,6 +266,24 @@ fi
 
 # bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+
+# atuin — SQLite shell history recording cwd, exit code and duration, synced to
+# a self-hosted server. Must init before deja, which wraps every ZLE widget.
+#
+# Up arrow stays with history-search-backward, and `?` stays a plain character.
+# The recording hooks are wanted in every terminal, but the Ctrl-R widget is ZLE
+# only, so Warp keeps its own history search and fzf's Ctrl-R is replaced
+# everywhere else.
+if command -v atuin >/dev/null; then
+  _atuin_flags=(--disable-up-arrow --disable-ai)
+  _atuin_cache=atuin
+  if [[ "$TERM_PROGRAM" == "WarpTerminal" && "$HERDR_ENV" != "1" ]]; then
+    _atuin_flags+=(--disable-ctrl-r)
+    _atuin_cache=atuin-warp
+  fi
+  _cached_init $_atuin_cache atuin init zsh $_atuin_flags
+  unset _atuin_flags _atuin_cache
+fi
 
 # deja — predictive ghost-text suggestions, replaces zsh-autosuggestions.
 # Tab stays with fzf-tab, so deja's alternatives picker is unbound.
@@ -259,7 +296,7 @@ if [[ "$TERM_PROGRAM" != "WarpTerminal" || "$HERDR_ENV" == "1" ]] \
    && command -v deja >/dev/null \
    && (( ! ${+functions[_deja_precmd]} )); then
   export DEJA_CYCLE_KEY=''
-  eval "$(deja init zsh)"
+  _cached_init deja deja init zsh
 fi
 
 # zsh-patina syntax highlighting — must stay at end of file, zle terminals only
