@@ -1,4 +1,8 @@
 onboarding = false
+
+[theme.custom]
+surface_dim = "#313244"
+
 [ui]
 agent_panel_sort = "spaces"
 sidebar_min_width = 40
