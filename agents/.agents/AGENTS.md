@@ -68,6 +68,8 @@ Don't co-author in commits or PR's. No `Co-Authored-By:` trailer, ever.
 
 Never mention that work was done with an AI agent (no attribution lines, footers, or "Generated with" notes) in commits, PRs, issues, comments, or any output. Never add reaction-prompt footers (e.g. "If this was useful, react with 👍").
 
+Don't hard-wrap prose at a fixed width in commit messages, PR descriptions, issues, or comments. Write each paragraph as one line and let the viewer wrap it. Use line breaks only for structure: paragraphs, lists, code blocks. Keep the commit subject line under ~72 characters.
+
 ## 6. Writing Plans and Docs
 
 When writing plan documents (plans, PRDs, specs), load the `ste-writing` skill if available and use its STE-flavored mode.
